@@ -1,0 +1,30 @@
+// This is the primary configuration file for the BIND DNS server named.
+//
+// Please read /usr/share/doc/bind9/README.Debian.gz for information on the 
+// structure of BIND configuration files in Debian, *BEFORE* you customize 
+// this configuration file.
+//
+// If you are just adding zones, please do that in /etc/bind/named.conf.local
+
+
+zone "alex.com" IN {
+	type master;
+	file "/etc/bind/db.alex.com";
+	allow-transfer { any; };
+};
+
+zone "20.168.192.IN-ADDR.ARPA" in {
+	type master;
+	file "/etc/bind/db.192.168.20";
+};
+
+zone "100.168.192.IN-ADDR.ARPA" in {
+	type master;
+	file "/etc/bind/db.192.168.100";
+};
+
+zone "8.8.8.IN-ADDR.ARPA" in {
+	type master;
+	file "/etc/bind/db.8.8.8";
+};
+
