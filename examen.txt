@@ -1,0 +1,336 @@
+............................................................................................
+                        ***** Saber tu IP *****
+
+ifconfig [tarjeta de red]:[numero] [ip]
+
+    ej.: ifconfig eno1:4 192.168.21.4
+
+............................................................................................
+            ***** Configuración de Servidor Windows (Terminal) *****
+
+sconfig 
+
+................................................................................
+                        ***** Añadir IP a tarjeta de Red *****
+
+netsh interface ipv4 set address name=[N. Tarjeta de red] static [ip] [submask]
+netsh interface ipv4 set address name=[N. Tarjeta de red] source=dhcp
+
+................................................................................
+                        ***** Permitir firewall *****
+
+netsh advfirewall set allprofiles state on
+netsh advfirewall set allprofiles state off
+
+................................................................................
+                        ***** Instalar SSH *****
+
+Get-WindowsCapability -Online | Where-Object Name -Like 'OpenSSH*'
+
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+................................................................................
+           ***** Coger una .ova de otro Windows Server *****
+
+Cambiar direccion mac de la red desde virtualbox
+sysprep (Directorio/comando para cambiar ID de maquina)
+
+sysdm.cpl (Propiedades del sistema)
+
+............................................................................................
+            ***** Pasos correctos para instalar SV dominios *****
+
+Cosas necesarias: 
+    Dominio Activo
+        herramienta servicio dns
+            Siempre acabar en .local
+                Vamos al CMD y escribimos netsh advfirewall set allprofiles state off
+
+...........................................................................................
+***** Pasos correctos para crear un windows server desde otra .ova *****
+
+1. Cogemos la .ova
+    2. En la misma maquina, click derecho,configuracion.   Vamos a red ,avanzadas y actualizamos la mac de las redes red interna y nat (** La desabilitamos durante la instalación hasta que promovemos el dominio para que no de fallos **) 
+        3. Iniciamos la maquina
+            4. Vamos al cmd y ponemos este comando - netsh advfirewall set allprofiles state off 
+                5. Damos Windows + R o vamos a Equipo/Disco C: /Windows/System32/Syprep
+                    6. Iniciamos Sysprep.exe
+                        7. Damos click al recuadro de Generalizar y aceptar
+                            8. Cuando inicie ponemos nuestra contraseña
+                                9. Damos una ip y DNS del servidor primario --> Reboot
+                                    10. dentro de la herramienta del dominio --> Servidor Local --> Damos nombre al equipo y unimos al dominio principal
+                                        11. Luego de que nos haya pedido reiniciar y lo haya hecho --> Administramos roles y caracteristicas
+............................................................................................
+            ***** Limite maximo de intentos antes de bloqueo equipo *****
+
+Directiva de seguridad local 
+    Configuracion de seguridad
+        Directivas de cuenta
+            Directiva de contraseñas
+............................................................................................
+            ***** Tiempo limite sin acceder a la sesion por maximo de intentos *****
+
+Directiva de seguridad local 
+    Configuracion de seguridad
+        Directivas de bloqueo de cuenta
+            Duracion del bloqueo de cuenta
+............................................................................................
+            ***** Crear Unidad organizativa *****
+
+Usuarios y equipos Active Directory
+    Dominio.local
+        click derecho en el dominio
+            Nuevo -> Unidad Organizativa
+............................................................................................
+            ***** Crear unidad Organizativa dentro de una ya creada *****
+
+Usuarios y equipos Active Directory
+    Damos click en Dominio.local 
+        Click derecho en la organizacion ya creada
+            Nuevo -> Unidad Organizativa
+............................................................................................
+            ***** Cambiar Politica complegidad contraseñas (dominio) *****
+
+Inicio – Ejecutar – gpmc.msc
+
+    Doble clic en tu Bosque
+    Doble clic en Dominios
+    Doble clic en el dominio en cuestión
+    Objetivos de directiva de grupos vinculados (Dentro del dominio)
+    Botón Derecho en Default Domain Policy > Editar
+    Configuración del Equipo
+        Directivas
+            Configuración de Windows
+                Configuración de Seguridad
+                    Directivas de cuenta
+                        Directiva de Contraseñas.
+                            La Contraseña debe cumplir los requisitos de complegidad.
+
+Ahora solo nos queda realizar un gpupdate /force (CMD)
+............................................................................................
+                ***** Denegar inicio Sesión local (dominio) *****
+
+Inicio – Ejecutar – gpmc.msc
+
+    Doble clic en tu Bosque
+    Doble clic en Dominios
+    Doble clic en el dominio en cuestión
+    Objetivos de directiva de grupos vinculados (Dentro del dominio)
+    Botón Derecho en Default Domain Policy > Editar
+Configuración del equipo 
+    Windows Configuración
+        Seguridad Configuración 
+            Directivas locales 
+                Asignación de derechos de usuario.
+
+Busque y haga doble clic en "Denegar el inicio de sesión local".
+
+Agregue el usuario y/o el grupo al que le gustaría denegar el acceso.
+
+Seleccione Aceptar.
+
+Ejecute o espere a que la siguiente actualización de directiva entre en gpupdate /force .
+.............................................................................................
+            ***** Permitir Inicio Sesion Escritorio Remoto *****
+
+Administrador del servidor --> Escritorio Remoto --> Permitir conexiones --> Seleccionar usuario
+
+    Doble clic en tu Bosque
+    Doble clic en Dominios
+    Doble clic en el dominio en cuestión
+    Objetivos de directiva de grupos vinculados (Dentro del dominio)
+    Botón Derecho en Default Domain Policy > Editar
+Configuración del equipo 
+    Windows Configuración
+        Seguridad Configuración 
+            Directivas locales 
+                Asignación de derechos de usuario.
+                    Busque y haga doble clic en "Permitir Inicio de sesion Remoto".
+
+                        Agregue el usuario y/o el grupo al que le gustaría Dar el acceso.
+
+                            Seleccione Aceptar.
+
+Ejecute o espere a que la siguiente actualización de directiva entre en gpupdate /force .
+.............................................................................................
+            ***** Tener Acceso a internet y descargas Internet Explorer *****
+
+Servidor Local
+    Configuracion Mejorada del IE --> desactivado
+
+
+.............................................................................................
+            ***** Conectar Windows Cliente a dominio Windows Server *****
+
+Aplicar la ip necesaria y la dns del dominio principal
+Vamos a archivos
+    Este equipo
+        Click Derecho --> Propiedades
+            Donde dice WorkGroup le damos a cambiar configuración
+                Ponemos unicamente el dominio CicloCanarias.local                
+.............................................................................................
+            ***** Conectar Linux cliente a dominio Windows Server *****
+
+Importante ---- Antes de empezar, ver que tenemos Linux Mint **No va con ubuntu**
+    Ponemos adaptador puente y arrancamos maquina
+        Ponemos en el buscador ---> Pbis github
+            Descargamos la versión pbis-open-XXXX.linux.x86_x64.deb.sh
+                Abrimos una terminal y ponemos sudo sh (y arrastramos el archivo de la carpeta descargas a la terminal)- enter
+                    Cuando se termine de instalar hacemos un sudo apt install ssh
+                        vamos a la configuracion de red, ponemos el DNS en manual y ponemos la IP del dominio primario. 192.168.1.1 (ejemplo)
+                            Luego en la terminal ponemos Sudo nano /etc/resolv.conf y donde pone nameserver ponemos la misma ip, Hacemos un reboot 
+                                iniciamos terminal -- sudo domainjoin-cli join CicloCanarias.local Administrador@CicloCanarias.local y nos deberia conectar.
+                                    Verificamos el inicio de sesion haciendo un host CicloCanarias.local o hostname -f 
+                                        hacemos un cd /etc/lightdm/lightdm.conf.d
+                                            sudo nano 70_linuxmint.conf
+                                               greeter-show-manual-login=true
+                                                Logueamos con CicloCanarias.local\Administrador y la contraseña
+                                                    Usuarios y equipos de dominio activo --> Computers
+...................................................................................................................................................................
+              ***** Añadir disco a Windows Server (montarlo) *****
+Herramientas
+    Administración de equipos
+        Almacenamiento ---> Administración de discos
+               Click derecho dentro del disco
+                    Crear Volumen simple
+                        Aceptar a todo
+...................................................................................................................................................
+             ***** Administrar disco a los usuarios (Windows Server) *****
+
+Vamos a Dominio Principal (Canarias)
+    Administrador del servidor
+        Administrar  ---> Agregar Roles y caracteristicas
+         Roles del servidor
+              Servicios de almacenamineto ---> Servicios de iSCSI ----> Administrador de recursos del servidor de archivos
+                Herramientas ---> Administrador de recursos de servidor de Archivos
+                    Administrador de cuotas ---> coutas
+                        Click derecho ---> Crear cuota
+                            Elegimos la ruta de la cuota (Disco que queremos elegir)
+                                Definir propiedades de cuota personalizadas ---> Y elegimos las opciones necesarias
+                                    Agregamos un humbral de notificacion y elegimos que al 85% mande una notificacion por espacio lleno
+......................................................................................................................................................................
+        ***** Añadir Espacio de Cuota a Usuario Unidad Organizativa *****
+
+Click derecho en el disco
+    Propiedades ---> Cuota ---> Habilitar Administración de couta
+        Valores de cuota
+            Cuota ---> Nueva entrada de cuota
+                Escribimos el nombre del usuario ---> Comprobar nombres
+                    Aceptar
+                        Limitar el espacio en disco a ---> Añadimos el espacio que nos dice 
+                            Añadimos limite de advertencia si es necesario 
+                                Aceptar
+...................................................................................................................................................................
+        ***** Quitar Permisos de herencia a una carpeta *****
+
+Click derecho en la carpeta creada --> Propiedades
+    Vamos a la pestaña seguridad
+        Opciones Avanzadas
+            Deshabilitar Herencia   
+........................................................................................................................................................
+        ***** Dar permisos a un usuario en una carpeta *****
+Click derecho en la carpeta creada --> Propiedades
+    Vamos a la pestaña seguridad
+        Editar
+            Agregar
+                Escribimos el nombre del usuario ---> Comprobar nombres
+                    Aceptar --> Aplicar
+.........................................................................................................................
+        ***** Tomar posesión de una carpeta *****
+
+Click derecho en la carpeta creada --> Propiedades
+    Vamos a la pestaña seguridad
+        Opciones Avanzadas
+            Click en el usuario elegido --> Editar            
+                Permisos Básicos --> Mostrar Permisos Avanzados  
+                    Tomar Posesión
+                        Aceptar  
+                            Aplicar
+...................................................................................
+        ***** Unir Disco RED a Windows Cliente *****
+
+Iniciamos Windows cliente
+    Vamos a otro usuario
+        Usuario -->AdminTenerife@CicloCanarias.local
+            Contraseña --> X
+                Enter
+                    Windows + R --> cmd
+                        net use x: (disco a elegir) \\canarias\e$\usuarios   e$ (quiere decir el disco donde creamos la carpeta usuarios)
+..............................................................................................................................................
+        ***** Unir Disco Dominio Principal a Windows Cliente *****
+
+Iniciamos Windows cliente
+    Vamos a otro usuario
+        Usuario -->AdminTenerife@CicloCanarias.local
+            Contraseña --> X
+                Enter
+                    Windows + R --> cmd
+                        net use b: (disco a elegir) \\canarias\c$   c$ (quiere decir el disco donde creamos la carpeta usuarios)net use b: \\canarias\c$\
+...............................................................................................................................................
+        ***** Volver a iniciar sesion en Local luego de unir a dominio *****
+
+Vamos a otro usuario
+        Usuario -->CLIENTEWINDOWSD\USUARIO
+            Contraseña --> X
+                Enter
+...................................................................................
+        ***** Administración de directivas de grupo *****
+
+
+
+...................................................................................
+        ***** Sacar los .msc del sistema *****
+
+dir *.msc > consolas.txt
+..................................................................................
+        ***** Deshabilitar Updates Windows *****
+
+Administrador de tareas
+    Servicios
+        wuausersv --> Click drch --> Abrir Servicios
+            Windows Update --> Click Drch --> Propiedades
+                Tipo de inicio --> Deshabilitado
+..................................................................................
+        ***** Crear unidades Organizativas con dsadd ***** 
+
+       En terminal (cmd) dsadd ou "ou=Usuarios,dc=NauzetVal,dc=local"
+..................................................................................      
+        ***** Crear unidades con ldif ***** 
+
+	En Terminal (cmd) ldifde -i -f C:\Users\Administrador\Desktop\ldifde.ldf -k    (Guardar archivo bloc notas como .ldf)
+    Archivo por dentro: 
+    dn: OU=persoais,OU=Usuarios,DC=NauzetVal,DC=local
+    changetype: add
+    objectClass: organizationalUnit
+
+..................................................................................
+        ***** Exportar ldifde con .csv *****
+    En Terminal (cmd) csvde -f ldifde.csv
+..................................................................................
+	***** Crear unidades Organizativas con Visual basic script *****
+	En Terminal (cmd) wscript nombre.vbs    (Guardar archivo bloc notas como .vbs)
+
+    Set objDom=GetObject("LDAP://dc=NauzetVal,dc=local")
+    Set objOU=objDom.create("OrganizationalUnit","ou=alumnos, ou=persoais, ou=Usuarios")
+    objOU.SetInfo
+
+..................................................................................
+ 	***** Crear unidades Organizativas con Powershell *****
+    -En PowerShell- 
+
+
+    Clear-Host
+    Import-Module ServerManager
+    Import-Module ActiveDirectory
+    $var1=read-host "Nombre Unidad:"
+    $num=read-host "Número de  Unidades:"
+    $i=1
+    while ($i -le $num)
+    {
+    New-ADOrganizationalUnit -Path "OU=Usuarios,DC=NauzetVal,DC=local"
+    New-ADOrganizationalUnit -Path "OU=alumnos,OU=persoais,OU=Usuarios,DC=NauzetVal,DC=local"
+    $i++
+    }
+...............................................................................................
