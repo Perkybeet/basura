@@ -1,0 +1,59 @@
+#http_access allow localnet
+http_access allow localhost
+
+#autenticacion
+auth_param basic program /usr/lib/squid/basic_ncsa_auth /etc/squid/squid_user
+auth_param basic realm Proxy Authentication Required
+auth_param basic credentialsttl 2 hours
+
+#usuarios
+acl logueado proxy_auth REQUIRED
+acl soy_mama proxy_auth mama
+acl soy_papa proxy_auth papa
+acl soy_hijo17 proxy_auth hijo17
+acl soy_hijo14 proxy_auth hijo14
+acl soy_hijo5 proxy_auth hijo5
+
+#horarios
+acl horario_hijo17 time 16:00-18:00
+acl horario_hijo14 time 16:00-18:00
+acl horario_hijo5 time 16:00-18:00
+acl horario_bloqueo-pm time 08:00-14:00
+
+#dominios
+acl permitir_hijo5 dstdomain /etc/squid/permitida
+acl acceso_hijo5 url_regex -i http://www.rtve.es/infantil/
+acl denegar_hijo17 url_regex -i lol
+acl denegar_papa dstdomain www.888poker.es
+acl wiki dstdomain wikipedia.org
+
+#mac
+acl mac_vecino arp 10:20:30:40:50:60
+
+#reglas
+reply_body_max_size 100 MB soy_hijo17
+reply_body_max_size 100 MB soy_hijo14
+reply_body_max_size 100 MB soy_hijo5
+
+http_access deny !logueado
+http_access deny mac_vecino
+
+cache deny wiki
+
+http_access deny horario_bloqueo-pm
+
+http_access allow !denegar_hijo17 soy_hijo17
+http_access reject !denegar_papa soy_papa
+
+http_access allow horario_hijo17 soy_hijo17
+http_access allow horario_hijo14 soy_hijo14
+http_access allow horario_hijo5 soy_hijo5
+
+http_access allow permitir_hijo5 soy_hijo5
+http_access allow acceso_hijo5 soy_hijo5
+
+# And finally deny all other access to this proxy
+http_access deny all
+
+error_directory usr/share/squid/errors/German
+error_default_language German
